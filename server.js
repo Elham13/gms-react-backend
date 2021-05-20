@@ -14,12 +14,14 @@ const initializePassport = require('./config/passport-config');
 const createAdmin = async (email1, password1) => {
     const hash = bcrypt.hashSync(password1, 10);
 
-    const newAdmin = {
+    const newUser = {
+        fullName: 'Elhamuddin Mahmooid',
         email: email1,
         password: hash,
+        role: "admin"
     }
-    const AdminsModal = require('./models/admins');
-    const ad = new AdminsModal(newAdmin);
+    const User = require('./models/users');
+    const ad = new User(newUser);
     await ad.save()
 }
 // createAdmin('wolverine.elham@gmail.com', '123456');

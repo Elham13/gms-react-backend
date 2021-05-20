@@ -1,62 +1,58 @@
-const fast2sms = require('fast-two-sms');
-const ProductModal = require('../models/product');
-const MobileModal = require('../models/mobiles');
-const ContactModal = require('../models/contact_us');
+const fast2sms = require("fast-two-sms");
+const ProductModal = require("../models/product");
+const MobileModal = require("../models/mobiles");
+const ContactModal = require("../models/contact_us");
+const User = require("../models/users");
+const bcrypt = require("bcrypt");
+const { generateToken } = require("../config/auth");
 
 const getHome = async (req, res) => {
     const foundProduct = await ProductModal.find({});
-    res.send({products: foundProduct})
-}
- 
+    res.json({ products: foundProduct });
+};
+
 const getLogin = (req, res) => {
-    res.render('login')
-}
+    res.render("login");
+};
 
 const getAdmin = async (req, res) => {
     const pro = await ProductModal.find({});
-    res.render('admin', {products: pro})
-}
+    res.render("admin", { products: pro });
+};
 
 const getAboutUs = (req, res) => {
-    res.render('pages/about_us');
-}
+    res.render("pages/about_us");
+};
 
 const getSerivces = (req, res) => {
-    res.render('pages/services');
-}
+    res.render("pages/services");
+};
 
 const getProducts = async (req, res) => {
     const pro = await ProductModal.find({});
-    res.render('pages/products', {products: pro});
-}
+    res.render("pages/products", { products: pro });
+};
 
 const getContactUs = (req, res) => {
-    res.render('pages/contact_us');
-}
+    res.render("pages/contact_us");
+};
 
 const getSingleProduct = async (req, res) => {
-    const {id} = req.params;
-    const product = await ProductModal.findById(id)
-    res.render('pages/single_product', {product});
-}
+    const { id } = req.params;
+    const product = await ProductModal.findById(id);
+    res.render("pages/single_product", { product });
+};
 
 const logout = async (req, res) => {
     req.logout();
-    req.flash('success_msg', 'You are logged out');
-    res.redirect('/login');
-}
+    req.flash("success_msg", "You are logged out");
+    res.redirect("/login");
+};
 
 const postAddProduct = async (req, res) => {
-    const {
-        id,
-        title, 
-        category, 
-        desc, 
-        price, 
-        photo, 
-    } = req.body;
+    const { id, title, category, desc, price, photo } = req.body;
 
-    if(id === ''){
+    if (id === "") {
         const p = await new ProductModal({
             Title: title,
             Category: category,
@@ -65,52 +61,63 @@ const postAddProduct = async (req, res) => {
             Image: photo,
         });
         await p.save();
-        res.send({message: "Service added succesfully"})
-    }else{
+        res.json({ message: "Service added succesfully" });
+    } else {
         await ProductModal.findByIdAndUpdate(id, {
             Title: title,
             Category: category,
             Description: desc,
             Price: price,
             Image: photo,
-        })
-        res.send({message: "Service updated succesfully"})
+        });
+        res.json({ message: "Service updated succesfully" });
     }
-}
+};
 
 const postSingleProduct = async (req, res) => {
-    const {productId} = req.body;
-    const product = await ProductModal.findById({_id: productId});
-    if(product){
-        res.render('single-product', {product: product})
+    const { productId } = req.body;
+    const product = await ProductModal.findById({ _id: productId });
+    if (product) {
+        res.render("single-product", { product: product });
     }
-}
+};
 
 const postMobileNumber = async (req, res) => {
-    const {id, name, mobileNumber} = req.body;
-    const product = await ProductModal.findById({_id: id});
-    const m = await new MobileModal({name: name, mobileNumber: mobileNumber, product: product})
-    // const smsRes = await fast2sms.sendMessage({
+    const { id, name, mobileNumber } = req.body;
+    const product = await ProductModal.findById({ _id: id });
+    const m = await new MobileModal({ name: name, mobileNumber: mobileNumber, product: product });
+    // const smsRes = await fast2sms.jsonMessage({
     //     authorization: process.env.SMS_API_KEY,
     //     message: `Hi dear ${name} Please give a call to Mr Chary +919985330008 and get the best deal from Global Marketing Solutions`,
     //     numbers: [mobileNumber]
-        
+
     // })
     await m.save();
-    res.send({message: "Successfuly added mobile number"})
-}
+    res.json({ message: "Successfuly added mobile number" });
+};
 
-const postLogin = (req, res) => {
-    const {email, password} = req.body;
-}
+const postSignup = async (req, res) => {
+    const { email, fullName, password } = req.body;
+    const user = await User.findOne({ email });
 
-const postSignup = (req, res) => {
-    const {email, fullName, password} = req.body;
-}
-
+    if (user) {
+        res.json({ message: "A user with that email is already exist" });
+    } else {
+        const user = new User({
+            fullName,
+            email,
+            password: bcrypt.hashSync(password, 8),
+        });
+        const createdUser = await user.save();
+        res.json({
+            message: "You are now registered successfully",
+            user: createdUser,
+        });
+    }
+};
 
 const postContact = async (req, res) => {
-    const {name, phoneNumber, email, message} = req.body;
+    const { name, phoneNumber, email, message } = req.body;
     const newContact = await new ContactModal({
         Name: name,
         MobileNumber: phoneNumber,
@@ -119,15 +126,30 @@ const postContact = async (req, res) => {
     });
 
     await newContact.save();
-    res.redirect('/contact');
-}
+    res.redirect("/contact");
+};
 
 const postDeletProduct = async (req, res) => {
-    const {id} = req.body; 
+    const { id } = req.body;
     await ProductModal.findByIdAndDelete(id);
-    res.send({message: "Product deleted successfuly"});
-}
+    res.json({ message: "Product deleted successfuly" });
+};
 
+const postLogin = async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (user) {
+        if (bcrypt.compareSync(password, user.password)) {
+            res.json({
+                user,
+                token: generateToken(user),
+            });
+            return;
+        }
+    }
+    res.status(401).json({ message: "Invalid email or password" });
+};
 
 module.exports = {
     getHome,
@@ -139,11 +161,11 @@ module.exports = {
     getContactUs,
     getSingleProduct,
     logout,
-    postAddProduct, 
+    postAddProduct,
     postSingleProduct,
     postMobileNumber,
     postLogin,
     postSignup,
     postContact,
     postDeletProduct,
-}
+};

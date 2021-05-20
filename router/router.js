@@ -3,7 +3,7 @@ const router = express.Router()
 
 const passport = require('passport');
 // const upload = require('../config/gfs');
-// const {ensureAuthenticated, forwardAuthenticated} = require('../config/auth'); 
+const {ensureAuthenticated, forwardAuthenticated} = require('../config/auth'); 
 
 const {
     getHome,
@@ -15,12 +15,13 @@ const {
     getContactUs,
     getSingleProduct,
     logout,
-    postAddProduct, 
+    postAddProduct,  
     postSingleProduct,
     postMobileNumber,
     postSignup,
     postContact,
     postDeletProduct,
+    postLogin,
 } = require('./controlers'); 
 
 router.get('/', getHome); 
@@ -32,13 +33,9 @@ router.get('/', getHome);
 // router.get('/contact', getContactUs);
 // router.get('/singleProduct/:id', getSingleProduct);
 
-// router.post('/login', forwardAuthenticated, passport.authenticate('local', {
-//     successRedirect: '/admin',
-//     failureRedirect: '/login',
-//     failureFlash: true
-// }));
+router.post('/login', postLogin);
 // router.delete('/logout',  logout);
-// router.post('/signup', postSignup);
+router.post('/signup', postSignup);
 
 // router.post('/single-product', postSingleProduct) 
 router.post('/mobilNumber', postMobileNumber) 

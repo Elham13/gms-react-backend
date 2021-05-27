@@ -8,7 +8,20 @@ const { generateToken } = require("../config/auth");
 
 const getHome = async (req, res) => {
     const foundProduct = await ProductModal.find({});
-    res.json({ products: foundProduct });
+    const foundProduct1 = [];
+    foundProduct.map(product => {
+        const newProduct = {
+            _id: product._id,
+            Images: product.Images[0],
+            Title: product.Title,
+            Category: product.Category,
+            Description: product.Description,
+            Price: product.Price,
+            CreatedAt: product.CreatedAt,
+        };
+        foundProduct1.push(newProduct);
+    });
+    res.json({ products: foundProduct1 });
 };
 
 const getLogin = (req, res) => {
@@ -40,13 +53,12 @@ const getContactUs = (req, res) => {
 const getSingleProduct = async (req, res) => {
     const { id } = req.params;
     const product = await ProductModal.findById(id);
-    res.render("pages/single_product", { product });
+    res.json({ message: "success", product: product });
 };
 
 const logout = async (req, res) => {
-    req.logout();
-    req.flash("success_msg", "You are logged out");
-    res.redirect("/login");
+    req.user = null;
+    res.json({ message: "Successfully logged out" });
 };
 
 const postAddProduct = async (req, res) => {
@@ -58,7 +70,7 @@ const postAddProduct = async (req, res) => {
             Category: category,
             Description: desc,
             Price: price,
-            Image: photo,
+            Images: photo,
         });
         await p.save();
         res.json({ message: "Service added succesfully" });
@@ -68,7 +80,7 @@ const postAddProduct = async (req, res) => {
             Category: category,
             Description: desc,
             Price: price,
-            Image: photo,
+            Images: photo,
         });
         res.json({ message: "Service updated succesfully" });
     }
@@ -151,6 +163,10 @@ const postLogin = async (req, res) => {
     res.status(401).json({ message: "Invalid email or password" });
 };
 
+const postProduct = async (req, res) => {
+    console.log(req.files);
+};
+
 module.exports = {
     getHome,
     getAdmin,
@@ -168,4 +184,5 @@ module.exports = {
     postSignup,
     postContact,
     postDeletProduct,
+    postProduct,
 };

@@ -1,50 +1,52 @@
 require("dotenv").config();
-const express = require('express')
-const passport = require('passport') 
+const express = require("express");
+const passport = require("passport");
 const expressSession = require("express-session");
 const flash = require("express-flash");
-const bcrypt = require('bcrypt');
-const methodOverride = require('method-override');
-const cors = require('cors');
+const bcrypt = require("bcrypt");
+const methodOverride = require("method-override");
+const cors = require("cors");
+const expressFileUpload = require("express-fileupload");
 
-const router = require('./router/router')
-const connectDb = require('./config/db')
-const initializePassport = require('./config/passport-config'); 
+const router = require("./router/router");
+const connectDb = require("./config/db");
+const initializePassport = require("./config/passport-config");
 
 const createAdmin = async (email1, password1) => {
     const hash = bcrypt.hashSync(password1, 10);
 
     const newUser = {
-        fullName: 'Elhamuddin Mahmooid',
+        fullName: "Elhamuddin Mahmooid",
         email: email1,
         password: hash,
-        role: "admin"
-    }
-    const User = require('./models/users');
+        role: "admin",
+    };
+    const User = require("./models/users");
     const ad = new User(newUser);
-    await ad.save()
-}
+    await ad.save();
+};
 // createAdmin('wolverine.elham@gmail.com', '123456');
 
-const app = express()
-connectDb()
+const app = express();
+connectDb();
 
 const corsOptions = {
     origin: "*",
     credentials: true, //access-control-allow-credentials:true
     optionSuccessStatus: 200,
 };
-  
+
 app.use(cors(corsOptions));
+app.use(expressFileUpload());
 
 // Express
 app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({extended: true, limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Method ovverride
-app.use(methodOverride('_method'));
+app.use(methodOverride("_method"));
 
-// passport 
+// passport
 initializePassport(passport);
 
 // Express Session
@@ -71,9 +73,7 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(router);
 
-
-app.use(router)
-
-const PORT = process.env.PORT || 5000
-app.listen(PORT, () => console.log(`Server started at ${PORT}`)) 
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server started at ${PORT}`));

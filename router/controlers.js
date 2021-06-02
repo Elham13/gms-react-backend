@@ -51,7 +51,8 @@ const getContactUs = (req, res) => {
 };
 
 const getSingleProduct = async (req, res) => {
-    const { id } = req.params;
+    const { id, name, mobileNumber } = req.params;
+    console.log("Body: ", req.body);
     const product = await ProductModal.findById(id);
     res.json({ message: "success", product: product });
 };

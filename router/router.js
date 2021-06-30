@@ -6,23 +6,26 @@ const passport = require("passport");
 const { ensureAuthenticated, forwardAuthenticated } = require("../config/auth");
 
 const {
-    getHome,
-    getAdmin,
-    getLogin,
-    getAboutUs,
-    getSerivces,
-    getProducts,
-    getContactUs,
-    getSingleProduct,
-    logout,
-    postAddProduct,
-    postSingleProduct,
-    postMobileNumber,
-    postSignup,
-    postContact,
-    postDeletProduct,
-    postLogin,
-    postProduct,
+  getHome,
+  getAdmin,
+  getLogin,
+  getAboutUs,
+  getSerivces,
+  getProducts,
+  getContactUs,
+  getSingleProduct,
+  getClients,
+  deleteClient,
+  logout,
+  postAddProduct,
+  postSingleProduct,
+  postMobileNumber,
+  postSignup,
+  postContact,
+  postDeletProduct,
+  postLogin,
+  postProduct,
+  postAddClient,
 } = require("./controlers");
 
 router.get("/", getHome);
@@ -33,6 +36,9 @@ router.get("/", getHome);
 // router.get('/products', getProducts);
 // router.get('/contact', getContactUs);
 router.get("/singleProduct/:id", getSingleProduct);
+router.get("/getClients", getClients);
+
+router.delete("/deleteClient/:id", deleteClient);
 
 router.post("/login", postLogin);
 router.post("/logout", logout);
@@ -45,5 +51,6 @@ router.post("/addProduct", postAddProduct);
 router.post("/product", postProduct);
 // router.post('/contact', postContact)
 router.post("/deletProduct", postDeletProduct);
+router.post("/addClient", postAddClient);
 
 module.exports = router;

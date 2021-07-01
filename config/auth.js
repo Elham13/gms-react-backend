@@ -1,20 +1,3 @@
-module.exports = {
-  ensureAuthenticated: function (req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    req.flash("error_msg", "Please log in to view that resource");
-    res.send({ message: "Authenitcated" });
-  },
-  forwardAuthenticated: function (req, res, next) {
-    // console.log("From Aut: ", req.body)
-    if (!req.isAuthenticated()) {
-      return next();
-    }
-    res.send({ message: "Not authenticated" });
-  },
-};
-
 const jwt = require("jsonwebtoken");
 
 const generateToken = (user) => {

@@ -4,6 +4,7 @@ const MobileModal = require("../models/mobiles");
 const ContactModal = require("../models/contact_us");
 const Client = require("../models/clients");
 const User = require("../models/users");
+const Plan = require("../models/plans");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../config/auth");
 
@@ -205,6 +206,28 @@ const postAddClient = async (req, res) => {
   const updatedClient = await Client.updateOne({ _id: id }, {});
 };
 
+const postPlan = async (req, res) => {
+  const { businessName, email, name, phoneNo, address } = req.body;
+
+  try {
+    const newPlan = await Plan.create({
+      businessName,
+      email,
+      name,
+      phoneNo,
+      address,
+    });
+    res
+      .status(201)
+      .json({
+        message: "Your request has been successfully registered with us",
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+};
+
 module.exports = {
   getHome,
   getAdmin,
@@ -226,4 +249,5 @@ module.exports = {
   postDeletProduct,
   postProduct,
   postAddClient,
+  postPlan,
 };

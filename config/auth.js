@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/users");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -14,21 +15,38 @@ const generateToken = (user) => {
   );
 };
 
-const isAuth = (req, res, next) => {
-  const authorization = req.headers.authorization;
-  if (authorization) {
-    const token = authorization.slice(7, authorization.length); //bearer XXXXXX
-    jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
-      if (err) {
-        res.status(401).send({ message: "Invalid Token" });
-      } else {
-        req.user = decode;
-        next();
-      }
-    });
-  } else {
-    res.status(401).send({ message: "No token" });
+const protect = async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "lkajdsfiwe");
+
+      req.user = await User.findById(decoded._id).select("-password");
+
+      next();
+    } catch (error) {
+      console.error(error);
+      res.status(202).json({ message: "Not authorized, token failed" });
+    }
+  }
+
+  if (!token) {
+    res.status(202).json({ message: "Not authorized, token failed" });
   }
 };
 
-module.exports = { generateToken, isAuth };
+const admin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(202).json({ message: "Not authorized as an admin" });
+  }
+};
+
+module.exports = { generateToken, protect, admin };

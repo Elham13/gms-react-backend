@@ -4,7 +4,8 @@ const clientSchema = new mongoose.Schema(
   {
     clientName: { type: String, required: true },
     brags: String,
-    photo: {},
+    photo: String,
+    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   },
   {
     timestamps: true,

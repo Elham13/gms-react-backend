@@ -1,55 +1,15 @@
 const fast2sms = require("fast-two-sms");
+const bcrypt = require("bcryptjs");
 const ProductModal = require("../models/product");
 const MobileModal = require("../models/mobiles");
-const ContactModal = require("../models/contact_us");
 const Client = require("../models/clients");
 const User = require("../models/users");
 const Plan = require("../models/plans");
-const bcrypt = require("bcrypt");
 const { generateToken } = require("../config/auth");
 
 const getHome = async (req, res) => {
   const foundProduct = await ProductModal.find({});
-  const foundProduct1 = [];
-  foundProduct.map((product) => {
-    const newProduct = {
-      _id: product._id,
-      Images: product.Images[0],
-      Title: product.Title,
-      Category: product.Category,
-      Description: product.Description,
-      Price: product.Price,
-      CreatedAt: product.CreatedAt,
-    };
-    foundProduct1.push(newProduct);
-  });
-  res.json({ products: foundProduct1 });
-};
-
-const getLogin = (req, res) => {
-  res.render("login");
-};
-
-const getAdmin = async (req, res) => {
-  const pro = await ProductModal.find({});
-  res.render("admin", { products: pro });
-};
-
-const getAboutUs = (req, res) => {
-  res.render("pages/about_us");
-};
-
-const getSerivces = (req, res) => {
-  res.render("pages/services");
-};
-
-const getProducts = async (req, res) => {
-  const pro = await ProductModal.find({});
-  res.render("pages/products", { products: pro });
-};
-
-const getContactUs = (req, res) => {
-  res.render("pages/contact_us");
+  res.json({ products: foundProduct });
 };
 
 const getSingleProduct = async (req, res) => {
@@ -80,35 +40,36 @@ const logout = async (req, res) => {
 };
 
 const postAddProduct = async (req, res) => {
-  const { id, title, category, desc, price, photo } = req.body;
+  try {
+    const product = await ProductModal.create({
+      Title: "Sample name",
+      Category: "None",
+      Description: "Write a description",
+      User: req.user._id,
+      Price: 0,
+      Images: "/images/sample.jpg",
+    });
 
-  if (id === "") {
-    const p = await new ProductModal({
-      Title: title,
-      Category: category,
-      Description: desc,
-      Price: price,
-      Images: photo,
-    });
-    await p.save();
-    res.json({ message: "Service added succesfully" });
-  } else {
-    await ProductModal.findByIdAndUpdate(id, {
-      Title: title,
-      Category: category,
-      Description: desc,
-      Price: price,
-      Images: photo,
-    });
-    res.json({ message: "Service updated succesfully" });
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(500).json(error);
   }
 };
 
-const postSingleProduct = async (req, res) => {
-  const { productId } = req.body;
-  const product = await ProductModal.findById({ _id: productId });
-  if (product) {
-    res.render("single-product", { product: product });
+const postEditProduct = async (req, res) => {
+  const { id, title, desc, price, category, photo } = req.body;
+
+  try {
+    const product = await ProductModal.findByIdAndUpdate(id, {
+      Title: title,
+      Description: desc,
+      Price: price,
+      Category: category,
+      Images: photo,
+    });
+    res.status(200).json({ message: "Service added successfully", product });
+  } catch (error) {
+    res.status(202).json({ message: error.message });
   }
 };
 
@@ -132,35 +93,32 @@ const postMobileNumber = async (req, res) => {
 
 const postSignup = async (req, res) => {
   const { email, fullName, password } = req.body;
-  const user = await User.findOne({ email });
+  const existUser = await User.findOne({ email: email.toLowerCase() });
 
-  if (user) {
-    res.json({ message: "A user with that email is already exist" });
+  if (existUser) {
+    res
+      .status(202)
+      .json({ message: "A user with that email is already exist" });
   } else {
-    const user = new User({
+    const user = await User.create({
       fullName,
-      email,
-      password: bcrypt.hashSync(password, 8),
+      email: email.toLowerCase(),
+      password: bcrypt.hashSync(password, 10),
     });
-    const createdUser = await user.save();
-    res.json({
-      message: "You are now registered successfully",
-      user: createdUser,
-    });
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        token: generateToken(user),
+      });
+    } else {
+      res.status(400);
+      throw new Error("Invalid user data");
+    }
   }
-};
-
-const postContact = async (req, res) => {
-  const { name, phoneNumber, email, message } = req.body;
-  const newContact = await new ContactModal({
-    Name: name,
-    MobileNumber: phoneNumber,
-    Email: email,
-    Message: message,
-  });
-
-  await newContact.save();
-  res.redirect("/contact");
 };
 
 const postDeletProduct = async (req, res) => {
@@ -173,16 +131,17 @@ const postLogin = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (user) {
-    if (bcrypt.compareSync(password, user.password)) {
-      res.json({
-        user,
-        token: generateToken(user),
-      });
-      return;
-    }
+  if (user && bcrypt.compareSync(password, user.password)) {
+    res.json({
+      _id: user._id,
+      role: user.role,
+      fullName: user.fullName,
+      email: user.email,
+      token: generateToken(user),
+    });
+    return;
   }
-  res.status(401).json({ message: "Invalid email or password" });
+  res.status(202).json({ message: "Invalid email or password" });
 };
 
 const postProduct = async (req, res) => {
@@ -190,20 +149,31 @@ const postProduct = async (req, res) => {
 };
 
 const postAddClient = async (req, res) => {
-  const { id, clientName, clientBody, photo } = req.body;
-
-  if (!id) {
+  try {
     const newClient = await Client.create({
+      clientName: "Enter name",
+      brags: "Enter description",
+      photo: "",
+      user: req.user._id,
+    });
+    res.status(201).json(newClient);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+const postEditClient = async (req, res) => {
+  const { id, clientName, clientBody, photo } = req.body;
+  try {
+    const client = await Client.findByIdAndUpdate(id, {
       clientName,
       brags: clientBody,
       photo,
     });
-
-    res.status(201).json({ message: "Client created successfully", newClient });
-    return;
+    res.status(200).json({ message: "New client successfully added", client });
+  } catch (error) {
+    res.status(202).json({ message: error.message });
   }
-
-  const updatedClient = await Client.updateOne({ _id: id }, {});
 };
 
 const postPlan = async (req, res) => {
@@ -217,11 +187,9 @@ const postPlan = async (req, res) => {
       phoneNo,
       address,
     });
-    res
-      .status(201)
-      .json({
-        message: "Your request has been successfully registered with us",
-      });
+    res.status(201).json({
+      message: "Your request has been successfully registered with us",
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -230,24 +198,18 @@ const postPlan = async (req, res) => {
 
 module.exports = {
   getHome,
-  getAdmin,
-  getLogin,
-  getAboutUs,
-  getSerivces,
-  getProducts,
-  getContactUs,
   getSingleProduct,
   getClients,
   deleteClient,
   logout,
   postAddProduct,
-  postSingleProduct,
   postMobileNumber,
   postLogin,
   postSignup,
-  postContact,
   postDeletProduct,
   postProduct,
   postAddClient,
   postPlan,
+  postEditProduct,
+  postEditClient,
 };

@@ -2,12 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const expressSession = require("express-session");
 const flash = require("express-flash");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const methodOverride = require("method-override");
 const cors = require("cors");
 const expressFileUpload = require("express-fileupload");
 
 const router = require("./router/router");
+const uploadRoutes = require("./router/uploadRoute");
 const connectDb = require("./config/db");
 
 const createAdmin = async (email1, password1) => {
@@ -35,11 +36,12 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(expressFileUpload());
+// app.use(expressFileUpload());
 
 // Express
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use("/uploads", express.static("uploads"));
 
 // Method ovverride
 app.use(methodOverride("_method"));
@@ -65,6 +67,7 @@ app.use((req, res, next) => {
 });
 
 app.use(router);
+app.use("/upload", uploadRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started at ${PORT}`));

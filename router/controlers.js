@@ -125,7 +125,7 @@ const postDeletProduct = async (req, res) => {
   const { id } = req.body;
   console.log("ID: ", id);
   await ProductModal.deleteOne({ _id: id });
-  res.json({ message: "Product deleted successfuly" });
+  res.status(200).json({ message: "Product deleted successfuly" });
 };
 
 const postLogin = async (req, res) => {

@@ -122,9 +122,9 @@ const postSignup = async (req, res) => {
 };
 
 const postDeletProduct = async (req, res) => {
-  const { id } = req.body;
-  console.log("ID: ", id);
-  await ProductModal.deleteOne({ _id: id });
+  const { id } = req.params;
+  console.log("Params: ", req.params.id);
+  const deleted = await ProductModal.deleteOne({ _id: id });
   res.status(200).json({ message: "Product deleted successfuly" });
 };
 

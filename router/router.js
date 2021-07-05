@@ -34,7 +34,7 @@ router.post("/mobilNumber", postMobileNumber);
 router.post("/addProduct", protect, postAddProduct);
 router.post("/editProduct", protect, postEditProduct);
 router.post("/product", postProduct);
-router.post("/deletProduct", postDeletProduct);
+router.delete("/deletProduct/:id", postDeletProduct);
 router.post("/addClient", protect, postAddClient);
 router.post("/editClient", protect, postEditClient);
 router.post("/plan", postPlan);

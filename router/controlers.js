@@ -124,7 +124,7 @@ const postSignup = async (req, res) => {
 const postDeletProduct = async (req, res) => {
   const { id } = req.body;
   console.log("ID: ", id);
-  await ProductModal.findByIdAndDelete(id);
+  await ProductModal.deleteOne({ _id: id });
   res.json({ message: "Product deleted successfuly" });
 };
 

@@ -23,7 +23,7 @@ router.get("/", getHome);
 router.get("/singleProduct/:id", getSingleProduct);
 router.get("/getClients", getClients);
 
-router.post("/deleteClient/:id", deleteClient);
+router.get("/deleteClient/:id", deleteClient);
 
 router.post("/login", postLogin);
 router.post("/logout", logout);
@@ -32,7 +32,7 @@ router.post("/signup", postSignup);
 router.post("/mobilNumber", postMobileNumber);
 router.post("/addProduct", protect, postAddProduct);
 router.post("/editProduct", protect, postEditProduct);
-router.post("/deletProduct/:id", postDeletProduct);
+router.get("/deletProduct/:id", postDeletProduct);
 router.post("/addClient", protect, postAddClient);
 router.post("/editClient", protect, postEditClient);
 router.post("/plan", postPlan);

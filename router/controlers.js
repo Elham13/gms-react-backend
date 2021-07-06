@@ -14,7 +14,6 @@ const getHome = async (req, res) => {
 
 const getSingleProduct = async (req, res) => {
   const { id, name, mobileNumber } = req.params;
-  console.log("Body: ", req.body);
   const product = await ProductModal.findById(id);
   res.json({ message: "success", product: product });
 };
@@ -75,20 +74,27 @@ const postEditProduct = async (req, res) => {
 
 const postMobileNumber = async (req, res) => {
   const { id, name, mobileNumber } = req.body;
-  const product = await ProductModal.findById({ _id: id });
-  const m = await new MobileModal({
-    name: name,
-    mobileNumber: mobileNumber,
-    product: product,
-  });
-  // const smsRes = await fast2sms.jsonMessage({
-  //     authorization: process.env.SMS_API_KEY,
-  //     message: `Hi dear ${name} Please give a call to Mr Chary +919985330008 and get the best deal from Global Marketing Solutions`,
-  //     numbers: [mobileNumber]
 
-  // })
-  await m.save();
-  res.json({ message: "Successfuly added mobile number" });
+  try {
+    const product = await ProductModal.findById({ _id: id });
+    const m = await new MobileModal({
+      name: name,
+      mobileNumber: mobileNumber,
+      product: product,
+    });
+    // const smsRes = await fast2sms.jsonMessage({
+    //     authorization: process.env.SMS_API_KEY,
+    //     message: `Hi dear ${name} Please give a call to Mr Chary +919985330008 and get the best deal from Global Marketing Solutions`,
+    //     numbers: [mobileNumber]
+
+    // })
+    await m.save();
+    res.status(201).json({
+      message: "Thanks for your interest, We will get back to you ASAP!",
+    });
+  } catch (error) {
+    res.status(203).json({ message: error.message });
+  }
 };
 
 const postSignup = async (req, res) => {
@@ -123,7 +129,6 @@ const postSignup = async (req, res) => {
 
 const postDeletProduct = async (req, res) => {
   const { id } = req.params;
-  console.log("Params: ", req.params.id);
   const deleted = await ProductModal.deleteOne({ _id: id });
   res.status(200).json({ message: "Product deleted successfuly" });
 };
@@ -143,10 +148,6 @@ const postLogin = async (req, res) => {
     return;
   }
   res.status(202).json({ message: "Invalid email or password" });
-};
-
-const postProduct = async (req, res) => {
-  console.log(req.files);
 };
 
 const postAddClient = async (req, res) => {
@@ -208,7 +209,6 @@ module.exports = {
   postLogin,
   postSignup,
   postDeletProduct,
-  postProduct,
   postAddClient,
   postPlan,
   postEditProduct,

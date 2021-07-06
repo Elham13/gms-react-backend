@@ -12,7 +12,6 @@ const {
   postSignup,
   postDeletProduct,
   postLogin,
-  postProduct,
   postAddClient,
   postPlan,
   postEditProduct,
@@ -24,7 +23,7 @@ router.get("/", getHome);
 router.get("/singleProduct/:id", getSingleProduct);
 router.get("/getClients", getClients);
 
-router.delete("/deleteClient/:id", deleteClient);
+router.post("/deleteClient/:id", deleteClient);
 
 router.post("/login", postLogin);
 router.post("/logout", logout);
@@ -33,8 +32,7 @@ router.post("/signup", postSignup);
 router.post("/mobilNumber", postMobileNumber);
 router.post("/addProduct", protect, postAddProduct);
 router.post("/editProduct", protect, postEditProduct);
-router.post("/product", postProduct);
-router.delete("/deletProduct/:id", postDeletProduct);
+router.post("/deletProduct/:id", postDeletProduct);
 router.post("/addClient", protect, postAddClient);
 router.post("/editClient", protect, postEditClient);
 router.post("/plan", postPlan);

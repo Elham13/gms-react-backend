@@ -59,11 +59,9 @@ const uploadS3 = multer({
   }),
 });
 
-// process.env.NODE_ENV === "development"
-
 router.post("/", uploadS3.array("images", 5), (req, res) => {
   const reqFiles = [];
-  // const url = req.protocol + "://" + req.get("host");
+
   // console.log(url);
   // console.log(req.files);
 
@@ -80,5 +78,9 @@ router.post("/single", uploadS3.single("image"), (req, res) => {
   const fileName = req.file.location;
   res.status(201).send(fileName);
 });
+// router.post("/single", upload.single("image"), (req, res) => {
+//   const url = req.protocol + "://" + req.get("host");
+//   res.status(201).send(url + "/" + req.file.path);
+// });
 
 module.exports = router;

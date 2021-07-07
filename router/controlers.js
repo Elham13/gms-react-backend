@@ -8,8 +8,39 @@ const Plan = require("../models/plans");
 const { generateToken } = require("../config/auth");
 
 const getHome = async (req, res) => {
-  const foundProduct = await ProductModal.find({});
-  res.json({ products: foundProduct });
+  const pro = await ProductModal.find({});
+  res.json({ products: pro });
+};
+
+const getProducts = async (req, res) => {
+  const pageSize = 10;
+  const { pageNumber, keyword } = req.query;
+  const page = Number(pageNumber) || 1;
+
+  const keywd = keyword
+    ? {
+        Title: {
+          $regex: keyword,
+          $options: "i",
+        },
+      }
+    : {};
+
+  const count = await ProductModal.countDocuments({ ...keywd });
+  const foundProduct = await ProductModal.find({ ...keywd })
+    .limit(pageSize)
+    .skip(pageSize * (page - 1));
+
+  res.json({
+    products: foundProduct,
+    page,
+    pages: Math.ceil(count / pageSize),
+  });
+};
+
+const getProductsCount = async (req, res) => {
+  const pro = await ProductModal.countDocuments({});
+  res.json(pro);
 };
 
 const getSingleProduct = async (req, res) => {
@@ -18,12 +49,24 @@ const getSingleProduct = async (req, res) => {
   res.json({ message: "success", product: product });
 };
 
+const getTopProducts = async (req, res) => {
+  const products = await ProductModal.find({}).sort({ Price: -1 }).limit(10);
+  res.json(products);
+};
+
 const getClients = async (req, res) => {
   const clients = await Client.find({});
 
   clients.length > 0
     ? res.status(200).json(clients)
     : res.status(202).json({ message: "No clients are created yet" });
+};
+
+const getUsers = async (req, res) => {
+  const users = await User.find({});
+  users.length > 0
+    ? res.status(200).json(users)
+    : res.status(202).json({ message: "No users are created yet" });
 };
 
 const deleteClient = async (req, res) => {
@@ -118,6 +161,7 @@ const postSignup = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
+        photo: user.photo,
         token: generateToken(user),
       });
     } else {
@@ -143,6 +187,7 @@ const postLogin = async (req, res) => {
       role: user.role,
       fullName: user.fullName,
       email: user.email,
+      photo: user.photo,
       token: generateToken(user),
     });
     return;
@@ -182,7 +227,7 @@ const postPlan = async (req, res) => {
   const { businessName, email, name, phoneNo, address } = req.body;
 
   try {
-    const newPlan = await Plan.create({
+    await Plan.create({
       businessName,
       email,
       name,
@@ -198,10 +243,44 @@ const postPlan = async (req, res) => {
   }
 };
 
+const postUpdateProfile = async (req, res) => {
+  const { id, fullName, email, password, photo } = req.body;
+
+  try {
+    const user = await User.findById(id);
+    user.fullName = fullName;
+    user.email = email;
+    if (password) {
+      user.password = bcrypt.hashSync(password, 10);
+    }
+    if (photo) {
+      user.photo = photo;
+    }
+    const u = await user.save();
+    res.status(200).json({
+      user: {
+        _id: u._id,
+        role: u.role,
+        fullName: u.fullName,
+        email: u.email,
+        photo: u.photo,
+        token: generateToken(u),
+      },
+      message: "Profile successfully updated",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getHome,
   getSingleProduct,
   getClients,
+  getProductsCount,
+  getProducts,
+  getTopProducts,
+  getUsers,
   deleteClient,
   logout,
   postAddProduct,
@@ -213,4 +292,5 @@ module.exports = {
   postPlan,
   postEditProduct,
   postEditClient,
+  postUpdateProfile,
 };

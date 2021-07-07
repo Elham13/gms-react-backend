@@ -1,11 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const expressSession = require("express-session");
-const flash = require("express-flash");
 const bcrypt = require("bcryptjs");
-const methodOverride = require("method-override");
 const cors = require("cors");
-const expressFileUpload = require("express-fileupload");
 
 const router = require("./router/router");
 const uploadRoutes = require("./router/uploadRoute");
@@ -43,9 +40,6 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use("/uploads", express.static("uploads"));
 
-// Method ovverride
-app.use(methodOverride("_method"));
-
 // Express Session
 app.use(
   expressSession({
@@ -54,17 +48,6 @@ app.use(
     saveUninitialized: false,
   })
 );
-
-// Express flash
-app.use(flash());
-
-// Global variables
-app.use((req, res, next) => {
-  res.locals.success_msg = req.flash("success_msg");
-  res.locals.error_msg = req.flash("error_msg");
-  res.locals.error = req.flash("error");
-  next();
-});
 
 app.use(router);
 app.use("/upload", uploadRoutes);

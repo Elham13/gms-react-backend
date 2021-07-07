@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "user",
     },
+    photo: { type: String, default: "" },
     createdAt: {
       type: Date,
       default: Date.now,

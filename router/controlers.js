@@ -2,6 +2,7 @@ const fast2sms = require("fast-two-sms");
 const bcrypt = require("bcryptjs");
 const ProductModal = require("../models/product");
 const MobileModal = require("../models/mobiles");
+const ContactModal = require("../models/contact_us");
 const Client = require("../models/clients");
 const User = require("../models/users");
 const Plan = require("../models/plans");
@@ -273,6 +274,20 @@ const postUpdateProfile = async (req, res) => {
   }
 };
 
+const postContactUs = async (req, res) => {
+  const { email, mobileNumber, name, message } = req.body;
+
+  await ContactModal.create({
+    Name: name,
+    MobileNumber: mobileNumber,
+    Email: email,
+    Message: message,
+  });
+  res
+    .status(201)
+    .json({ message: "Thanks for the enquiry we will get back to you ASAP" });
+};
+
 module.exports = {
   getHome,
   getSingleProduct,
@@ -293,4 +308,5 @@ module.exports = {
   postEditProduct,
   postEditClient,
   postUpdateProfile,
+  postContactUs,
 };

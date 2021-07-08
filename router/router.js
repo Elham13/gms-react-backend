@@ -21,6 +21,7 @@ const {
   postEditProduct,
   postEditClient,
   postUpdateProfile,
+  postContactUs,
 } = require("./controlers");
 const { protect } = require("../config/auth");
 
@@ -44,5 +45,6 @@ router.post("/addClient", protect, postAddClient);
 router.post("/editClient", protect, postEditClient);
 router.post("/plan", postPlan);
 router.post("/updateProfile", protect, postUpdateProfile);
+router.post("/contactUs", postContactUs);
 
 module.exports = router;
